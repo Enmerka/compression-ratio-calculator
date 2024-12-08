@@ -13,14 +13,9 @@ from bs4 import BeautifulSoup
 import gzip
 import pandas as pd
 import matplotlib.pyplot as plt
+from io import BytesIO
 
-# Define the app title
-st.title("URL Compression Ratio Analyzer")
-
-# User input for URL
-url = st.text_input("Enter a URL:", "")
-
-# Function to fetch and parse the webpage
+# Function to fetch and parse a webpage with headers to mimic a browser
 def fetch_and_parse(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -31,9 +26,51 @@ def fetch_and_parse(url):
             response.raise_for_status()
             soup = BeautifulSoup(response.content, 'html.parser')
     except requests.RequestException as e:
-        st.error(f"Error fetching URL: {e}")
+        st.error(f"Error fetching URL {url}: {e}")
         return None
+
+    for tag in soup(['head', 'header', 'footer', 'script', 'style', 'meta']):
+        tag.decompose()  # Remove unnecessary tags
+
     return soup
+
+# Function to extract and combine text from the page
+def extract_text_selectively(soup):
+    if not soup:
+        return ""
+
+    individual_tags = {'p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr'}
+    container_tags = {'div', 'section', 'article', 'main'}
+    excluded_tags = {'style', 'script', 'meta', 'body', 'html', '[document]', 'button'}
+
+    text_lines = []
+
+    for element in soup.find_all(True, recursive=True):
+        if element.name in excluded_tags:
+            continue
+
+        if element.name == 'tr':
+            row_text = []
+            for cell in element.find_all(['th', 'td']):
+                cell_text = cell.get_text(separator=' ', strip=True)
+                if cell_text:
+                    row_text.append(cell_text)
+            if row_text:
+                text_lines.append(', '.join(row_text))
+            continue
+
+        elif element.name in individual_tags:
+            inline_text = ' '.join(element.stripped_strings)
+            if inline_text:
+                text_lines.append(inline_text)
+
+        elif element.name in container_tags:
+            direct_text = ' '.join([t.strip() for t in element.find_all(text=True, recursive=False) if t.strip()])
+            if direct_text:
+                text_lines.append(direct_text)
+
+    combined_text = ' '.join(text_lines)
+    return combined_text
 
 # Function to calculate compression ratio
 def calculate_compression_ratio(text):
@@ -42,12 +79,59 @@ def calculate_compression_ratio(text):
     original_size = len(text.encode('utf-8'))
     compressed_data = gzip.compress(text.encode('utf-8'))
     compressed_size = len(compressed_data)
-    return original_size / compressed_size
+    compression_ratio = original_size / compressed_size
+    return compression_ratio
 
-# Analyze the URL when input is provided
-if url:
-    soup = fetch_and_parse(url)
-    if soup:
-        text = ' '.join([t.strip() for t in soup.stripped_strings])
-        ratio = calculate_compression_ratio(text)
-        st.write(f"Compression Ratio: {ratio:.2f}")
+# Streamlit app
+st.title("URL Compression Ratio Calculator")
+
+uploaded_file = st.file_uploader("Upload an Excel file with a column named 'URL'", type=['xlsx'])
+
+if uploaded_file:
+    # Read the uploaded file
+    df = pd.read_excel(uploaded_file)
+    if 'URL' not in df.columns:
+        st.error("The uploaded file must contain a column named 'URL'.")
+    else:
+        compression_ratios = []
+        with st.spinner("Processing URLs..."):
+            for index, row in df.iterrows():
+                url = row['URL']
+                st.write(f"Processing: {url}")
+                soup = fetch_and_parse(url)
+                combined_text = extract_text_selectively(soup)
+                compression_ratio = calculate_compression_ratio(combined_text)
+                compression_ratios.append(compression_ratio)
+
+        df['Compression Ratio'] = compression_ratios
+
+        st.success("Processing completed!")
+        st.write("Here are the results:")
+        st.dataframe(df)
+
+        # Allow download of results
+        output = BytesIO()
+        df.to_excel(output, index=False, engine='openpyxl')
+        output.seek(0)
+        st.download_button(
+            label="Download Results as Excel",
+            data=output,
+            file_name="compression_ratios.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+        # Visualize compression ratios
+        st.subheader("Compression Ratios Visualization")
+        plt.figure(figsize=(12, 8))
+        bars = plt.bar(df['URL'], df['Compression Ratio'], color='blue', alpha=0.7, label='Compression Ratio')
+        for i, bar in enumerate(bars):
+            if df['Compression Ratio'][i] > 4.0:
+                bar.set_color('red')
+        plt.axhline(y=4.0, color='orange', linestyle='--', linewidth=2, label='Spam Threshold (4.0)')
+        plt.xticks(rotation=90, fontsize=8)
+        plt.title("Compression Ratios of URLs", fontsize=16)
+        plt.xlabel("URLs", fontsize=12)
+        plt.ylabel("Compression Ratio", fontsize=12)
+        plt.legend()
+        plt.tight_layout()
+        st.pyplot(plt)
