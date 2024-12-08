@@ -8,10 +8,12 @@ Original file is located at
 """
 
 import streamlit as st
-import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import gzip
+import pandas as pd
+import matplotlib.pyplot as plt
+from io import BytesIO
 
 # Function to fetch and parse a webpage
 def fetch_and_parse(url):
@@ -22,53 +24,98 @@ def fetch_and_parse(url):
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
+
+        # Remove unnecessary tags
+        for tag in soup(['head', 'header', 'footer', 'script', 'style', 'meta']):
+            tag.decompose()
+        return soup
     except requests.RequestException as e:
         st.error(f"Error fetching URL {url}: {e}")
         return None
-
-    for tag in soup(['head', 'header', 'footer', 'script', 'style', 'meta']):
-        tag.decompose()
-    return soup
 
 # Function to extract and combine text from the page
 def extract_text_selectively(soup):
     if not soup:
         return ""
-
+    individual_tags = {'p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr'}
+    container_tags = {'div', 'section', 'article', 'main'}
+    excluded_tags = {'style', 'script', 'meta', 'body', 'html', '[document]', 'button'}
+    
     text_lines = []
-    for element in soup.find_all(['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr'], recursive=True):
-        inline_text = ' '.join(element.stripped_strings)
-        if inline_text:
-            text_lines.append(inline_text)
-
-    return ' '.join(text_lines)
+    for element in soup.find_all(True, recursive=True):
+        if element.name in excluded_tags:
+            continue
+        if element.name == 'tr':
+            row_text = [cell.get_text(separator=' ', strip=True) for cell in element.find_all(['th', 'td']) if cell.get_text(strip=True)]
+            if row_text:
+                text_lines.append(', '.join(row_text))
+        elif element.name in individual_tags:
+            inline_text = ' '.join(element.stripped_strings)
+            if inline_text:
+                text_lines.append(inline_text)
+        elif element.name in container_tags:
+            direct_text = ' '.join([t.strip() for t in element.find_all(text=True, recursive=False) if t.strip()])
+            if direct_text:
+                text_lines.append(direct_text)
+    
+    combined_text = ' '.join(text_lines)
+    return combined_text
 
 # Function to calculate compression ratio
 def calculate_compression_ratio(text):
     if not text:
         return 0
     original_size = len(text.encode('utf-8'))
-    compressed_data = gzip.compress(text.encode('utf-8'))
-    compressed_size = len(compressed_data)
-    return original_size / compressed_size if compressed_size else 0
+    compressed_size = len(gzip.compress(text.encode('utf-8')))
+    return original_size / compressed_size
 
-# Streamlit App
+# Streamlit app
 st.title("URL Compression Ratio Calculator")
 
-# File uploader
-uploaded_file = st.file_uploader("Upload an Excel file with a column named 'URL'", type=["xlsx"])
+uploaded_file = st.file_uploader("Upload an Excel file with a column named 'URL'", type=['xlsx'])
 
 if uploaded_file:
-    df = pd.read_excel(uploaded_file)
-    st.write("Uploaded Data Preview:", df.head())
-
-    if 'URL' in df.columns:
-        compression_ratios = []
-
-        # Process each URL
-        for index, row in df.iterrows():
-            url = row['URL']
-            st.write(f"Processing URL: {url}")
+    # Read the uploaded Excel file
+    try:
+        df = pd.read_excel(uploaded_file)
+        if 'URL' not in df.columns:
+            st.error("The uploaded file must contain a column named 'URL'.")
+        else:
+            compression_ratios = []
+            with st.spinner("Processing URLs..."):
+                for index, row in df.iterrows():
+                    url = row['URL']
+                    st.write(f"Processing: {url}")
+                    soup = fetch_and_parse(url)
+                    combined_text = extract_text_selectively(soup)
+                    compression_ratio = calculate_compression_ratio(combined_text)
+                    compression_ratios.append(compression_ratio)
             
-            soup = fetch_and_parse(url)
-            combined_text = extract_t
+            # Add compression ratios to DataFrame
+            df['Compression Ratio'] = compression_ratios
+            
+            st.success("Processing completed!")
+            st.write("Here are the results:")
+            st.dataframe(df)
+            
+            # Allow download of results
+            output = BytesIO()
+            df.to_excel(output, index=False, engine='openpyxl')
+            output.seek(0)
+            st.download_button(
+                label="Download Results as Excel",
+                data=output,
+                file_name="compression_ratios.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            
+            # Visualize compression ratios
+            st.subheader("Compression Ratios Visualization")
+            plt.figure(figsize=(12, 8))
+            bars = plt.bar(df['URL'], df['Compression Ratio'], color='blue', alpha=0.7, label='Compression Ratio')
+            for i, bar in enumerate(bars):
+                if df['Compression Ratio'][i] > 4.0:
+                    bar.set_color('red')
+            plt.axhline(y=4.0, color='orange', linestyle='--', linewidth=2, label='Spam Threshold (4.0)')
+            plt.xticks(rotation=
+
