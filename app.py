@@ -19,6 +19,7 @@ sidebar_style = """
     <style>
     [data-testid="stSidebar"] {
         background-color: #007bff; /* Sidebar background color */
+        color: white;  
         padding: 20px; /* Padding inside the sidebar */
         box-shadow: 2px 0px 10px rgba(0,0,0,0.1); /* Shadow for sidebar */
     }
