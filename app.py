@@ -37,27 +37,23 @@ Steps:
 5. Exporting Results to Excel (matched_urls.xlsx)
 """
 
-# Customize the sidebar with HTML and CSS
-sidebar_style = """
-    <style>
-    [data-testid="stSidebar"] {
-        background-color: #006ba1; /* Sidebar background color */
-        color: white;  
-        padding: 20px; /* Padding inside the sidebar */
-        box-shadow: 2px 0px 10px rgba(0,0,0,0.1); /* Shadow for sidebar */
-    }
-    </style>
-"""
-st.markdown(sidebar_style, unsafe_allow_html=True)
-
-# Add content to the sidebar
+# Add the styled sidebar
 with st.sidebar:
-    st.header("Sidebar Header")
-    st.write("This is a slideable sidebar.")
-    st.write("You can add text, widgets, or other elements here.")
+    st.markdown(
+        f"""
+        <div style="
+            background-color: #006ba1;
+            color: white; 
+            padding: 15px; 
+            border-radius: 5px;">
+            {text_content.replace('\n', '<br>')}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # Main page content
-st.write("This is the main page.")
+st.write("")
 
 # Function to fetch and parse a webpage
 def fetch_and_parse(url):
