@@ -36,8 +36,10 @@ Steps:
 4. Generating Redirect Suggestions
 5. Exporting Results to Excel (matched_urls.xlsx)
 """
-
-<style>
+# Inject custom CSS to style the entire sidebar
+st.markdown(
+    """
+    <style>
     [data-testid="stSidebar"] {
         background-color: blue;
         color: white;
@@ -49,6 +51,7 @@ Steps:
     """,
     unsafe_allow_html=True
 )
+
 
 # Main page content
 st.write("")
