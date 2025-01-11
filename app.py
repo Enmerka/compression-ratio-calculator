@@ -14,9 +14,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-# Define the body of text
-text_content = """
-
+# Define the header and body of text
+header = "4xx Redirects V2 (BigC-URL path)"
+body = """
 This script is designed to automate the process of suggesting redirects by matching old URLs (resulting in 4xx errors) with live URLs from an XML sitemap crawl based on the similarity of the URL paths and H1 tags.
 
 Files Used:
@@ -36,20 +36,26 @@ Steps:
 5. Exporting Results to Excel (matched_urls.xlsx)
 """
 
-# Add the styled sidebar
-with st.sidebar:
-    st.markdown(
-        f"""
-        <div style="
-            background-color: blue; 
-            color: white; 
-            padding: 15px; 
-            border-radius: 5px;">
-            {text_content.replace('\n', '<br>')}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+# Add a full sidebar background and styled content
+st.markdown(
+    """
+    <style>
+    /* Set the full sidebar background color */
+    [data-testid="stSidebar"] {
+        background-color: blue;
+        color: white;
+        padding: 20px;
+    }
+    /* Style the header inside the sidebar */
+    .sidebar-header {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Main page content
 st.write("")
