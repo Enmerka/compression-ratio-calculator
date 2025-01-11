@@ -37,16 +37,8 @@ Steps:
 """
 
 # Add custom CSS to style the entire sidebar
-st.markdown(
-        f"""
-        <div style="
-            background-color: blue; 
-            color: white; 
-            padding: 15px; 
-            border-radius: 5px;">
-            {text_content.replace('\n', '<br>')}
-        </div>
-        """,
+st.markdown(  
+        """
      <style>
     /* Style for the entire sidebar */
     [data-testid="stSidebar"] > div:first-child {
