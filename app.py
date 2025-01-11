@@ -73,8 +73,8 @@ with st.sidebar:
     st.markdown(f'<div class="sidebar-body">{body.replace("\n", "<br>")}</div>', unsafe_allow_html=True)
 
 # Main page content
-st.title("Streamlit App with Styled Sidebar")
-st.write("This is the main content of the app. The sidebar contains detailed instructions.")
+st.title("")
+st.write("")
 
 
 # Main page content
