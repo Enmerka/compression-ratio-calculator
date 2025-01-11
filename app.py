@@ -52,7 +52,6 @@ st.markdown(
     [data-testid="stSidebar"] > div:first-child {
         background-color: blue;
         color: white;
-        padding: 20px;
     }
     /* Optional: Adjust text styles */
     [data-testid="stSidebar"] p {
