@@ -37,20 +37,18 @@ Steps:
 5. Exporting Results to Excel (matched_urls.xlsx)
 """
 
-# Add the styled sidebar
-with st.sidebar:
-    st.markdown(
-        f"""
-        <div style="
-            background-color: #006ba1;
-            color: white; 
-            padding: 15px; 
-            border-radius: 5px;">
-            {text_content.replace('\n', '<br>')}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+  <style>
+    [data-testid="stSidebar"] {
+        background-color: blue;
+        color: white;
+    }
+    [data-testid="stSidebar"] .css-1d391kg { /* Optional: to style text inside the sidebar */
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Main page content
 st.write("")
