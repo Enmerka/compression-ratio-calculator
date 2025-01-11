@@ -37,7 +37,7 @@ Steps:
 5. Exporting Results to Excel (matched_urls.xlsx)
 """
 
-  <style>
+<style>
     [data-testid="stSidebar"] {
         background-color: blue;
         color: white;
