@@ -38,8 +38,11 @@ Steps:
 
 # Add custom CSS to style the entire sidebar
 st.markdown(
-    """
-    <style>
+    f"""
+    <div style="
+            background-color: blue; 
+            color: white; 
+     <style>
     /* Style for the entire sidebar */
     [data-testid="stSidebar"] > div:first-child {
         background-color: blue;
