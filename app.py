@@ -36,30 +36,39 @@ Steps:
 5. Exporting Results to Excel (matched_urls.xlsx)
 """
 
-# Add custom CSS to style the entire sidebar
-st.markdown(  
-        """
-     <style>
-    /* Style for the entire sidebar */
+# Add custom CSS for styling the sidebar
+st.markdown(
+    """
+    <style>
+    /* Apply background and text color to the entire sidebar */
     [data-testid="stSidebar"] > div:first-child {
         background-color: blue;
         color: white;
     }
-    /* Optional: Adjust text styles */
-    [data-testid="stSidebar"] p {
-        font-size: 14px;
-        line-height: 1.5;
+    /* Adjust padding for better readability */
+    [data-testid="stSidebar"] > div:first-child {
+        padding: 20px;
     }
-    /* Header styles */
+    /* Style header text */
     .sidebar-header {
         font-size: 20px;
         font-weight: bold;
         margin-bottom: 15px;
     }
+    /* Style paragraph text */
+    .sidebar-body {
+        font-size: 14px;
+        line-height: 1.6;
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+# Place content inside the styled sidebar
+with st.sidebar:
+    st.markdown(f'<div class="sidebar-header">{header}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="sidebar-body">{body.replace("\n", "<br>")}</div>', unsafe_allow_html=True)
 
 # Place content inside the styled sidebar
 with st.sidebar:
