@@ -14,48 +14,34 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-# Define the header and body of text
-header = "4xx Redirects V2 (BigC-URL path)"
-body = """
-This script is designed to automate the process of suggesting redirects by matching old URLs (resulting in 4xx errors) with live URLs from an XML sitemap crawl based on the similarity of the URL paths and H1 tags.
-
-Files Used:
-
-- Old.xlsx: This Excel file represents the list of old URLs that result in 4xx errors. It contains one column: URL.
-- New.xlsx: This Excel file represents the live URLs crawled from the XML sitemap, including the H1 tags for each URL. It contains two columns: URL and H1.
-
-Purpose:
-The script compares the URL paths from Old.xlsx with the paths from New.xlsx, and takes into account the similarity between the old path and the H1 tag from New.xlsx. It suggests the best matching live URL with a similarity score.
-
-Steps:
-
-1. Loading the Data (Old.xlsx, New.xlsx)
-2. Extracting URL paths
-3. Similarity Matching (Paths and H1)
-4. Generating Redirect Suggestions
-5. Exporting Results to Excel (matched_urls.xlsx)
-"""
-
-# Add custom CSS for styling the sidebar
+# Custom CSS for the entire sidebar
 st.markdown(
     """
     <style>
-    /* Apply background and text color to the entire sidebar */
-    [data-testid="stSidebar"] > div:first-child {
+    /* Style the entire sidebar */
+    [data-testid="stSidebar"] {
         background-color: blue;
         color: white;
     }
-    /* Adjust padding for better readability */
-    [data-testid="stSidebar"] > div:first-child {
+
+    /* Style all text inside the sidebar */
+    [data-testid="stSidebar"] * {
+        color: white;
+    }
+
+    /* Adjust padding for better spacing */
+    [data-testid="stSidebar"] > div {
         padding: 20px;
     }
-    /* Style header text */
+
+    /* Header style */
     .sidebar-header {
         font-size: 20px;
         font-weight: bold;
         margin-bottom: 15px;
     }
-    /* Style paragraph text */
+
+    /* Body text style */
     .sidebar-body {
         font-size: 14px;
         line-height: 1.6;
@@ -64,6 +50,11 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# Add content to the styled sidebar
+with st.sidebar:
+    st.markdown(f'<div class="sidebar-header">{header}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="sidebar-body">{body.replace("\n", "<br>")}</div>', unsafe_allow_html=True)
 
 # Place content inside the styled sidebar
 with st.sidebar:
