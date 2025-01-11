@@ -14,6 +14,27 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from io import BytesIO
 
+# Customize the sidebar with HTML and CSS
+sidebar_style = """
+    <style>
+    [data-testid="stSidebar"] {
+        background-color: #f0f0f0; /* Sidebar background color */
+        padding: 20px; /* Padding inside the sidebar */
+        box-shadow: 2px 0px 10px rgba(0,0,0,0.1); /* Shadow for sidebar */
+    }
+    </style>
+"""
+st.markdown(sidebar_style, unsafe_allow_html=True)
+
+# Add content to the sidebar
+with st.sidebar:
+    st.header("Sidebar Header")
+    st.write("This is a slideable sidebar.")
+    st.write("You can add text, widgets, or other elements here.")
+
+# Main page content
+st.write("This is the main page.")
+
 # Function to fetch and parse a webpage
 def fetch_and_parse(url):
     headers = {
