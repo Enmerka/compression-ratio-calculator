@@ -38,7 +38,6 @@ Steps:
 """
 # Inject custom CSS to style the entire sidebar
 st.markdown(
-    """
     <style>
     [data-testid="stSidebar"] {
         background-color: blue;
@@ -47,8 +46,7 @@ st.markdown(
     [data-testid="stSidebar"] .css-1d391kg { /* Optional: to style text inside the sidebar */
         color: white;
     }
-    </style>
-    """,
+    </style>,
     unsafe_allow_html=True
 )
 
